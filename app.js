@@ -5,7 +5,7 @@
   const VENMO_URL = 'https://venmo.com/u/brianwbeard';
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
-  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
 
   if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS)) {
     document.body.innerHTML = "<p style='font-family:sans-serif;padding:20px'>Word data failed to load. Please refresh the page.</p>";
@@ -95,16 +95,26 @@
     els.mathSubmit.addEventListener('click', checkMathGate);
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
     els.saveSubmit.addEventListener('click', submitSaveGuess);
-    els.winNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
+    els.winNextBtn.addEventListener('click', () => { closeModal({suppressSaveFallback:true}); startGame(); });
     els.saveGuess.addEventListener('keydown', e => { if (e.key === 'Enter') submitSaveGuess(); });
     document.addEventListener('keydown', handlePhysicalKeyboard);
   }
 
   function buildKeyboard() {
     els.keyboard.innerHTML='';
-    LETTERS.forEach(letter => {
-      const btn=document.createElement('button'); btn.className='key'; btn.textContent=letter; btn.dataset.letter=letter; btn.setAttribute('aria-label', `Guess ${letter}`);
-      btn.addEventListener('click', () => guessLetter(letter)); els.keyboard.appendChild(btn);
+    KEYBOARD_ROWS.forEach(rowLetters => {
+      const row=document.createElement('div');
+      row.className='key-row';
+      [...rowLetters].forEach(letter => {
+        const btn=document.createElement('button');
+        btn.className='key';
+        btn.textContent=letter;
+        btn.dataset.letter=letter;
+        btn.setAttribute('aria-label', `Guess ${letter}`);
+        btn.addEventListener('click', () => guessLetter(letter));
+        row.appendChild(btn);
+      });
+      els.keyboard.appendChild(row);
     });
   }
 
@@ -201,9 +211,9 @@
     const guess=els.saveGuess.value.trim().toUpperCase().replace(/[^A-Z]/g,'');
     if (!guess) { els.saveFeedback.textContent='Type the whole word first.'; return; }
     if (guess === game.item.word) {
-      closeModal(); finishWin(true);
+      closeModal({suppressSaveFallback:true}); finishWin(true);
     } else {
-      closeModal();
+      closeModal({suppressSaveFallback:true});
       renderWord(null, true);
       setMessage(`The word was ${game.item.word}. New snowman?`, 'bad');
       react('Puddle time! 💧');
@@ -233,55 +243,46 @@
   function react(text) { els.reaction.textContent=text; els.reaction.classList.remove('show'); void els.reaction.offsetWidth; els.reaction.classList.add('show'); }
   function animateSnowman(cls) { const svg=els.snowmanMount.querySelector('svg'); if (!svg) return; svg.classList.remove('correct','wrong'); void svg.offsetWidth; svg.classList.add(cls); }
   function animateMelt(done) {
-    const svg=els.snowmanMount.querySelector('svg');
-    if (!svg) { done(); return; }
-    svg.classList.remove('melt-pulse'); void svg.offsetWidth; svg.classList.add('melt-pulse');
-    const drops=els.snowmanMount.querySelector('.melt-drops'); if (drops) { drops.classList.remove('dripping'); void drops.offsetWidth; drops.classList.add('dripping'); }
-    setTimeout(done, 380);
+    const target=els.snowmanMount.querySelector(`.melt-step-${game.wrong}`);
+    if (!target) { setTimeout(done, 120); return; }
+    target.classList.remove('melting-away');
+    void target.getBoundingClientRect();
+    target.classList.add('melting-away');
+    setTimeout(done, 900);
   }
 
   function renderSnowman(restored=false) {
-    const wrong=restored ? 0 : game.wrong;
+    const stage=Math.min(restored ? 0 : game.wrong, MELT_STAGES);
     const c=game.cosmetic;
-    const stage=Math.min(wrong, MELT_STAGES);
-    const baseRy=[54,50,45,39,31,23,15,0][stage];
-    const baseCy=[207,211,216,222,229,237,245,255][stage];
-    const bodyRy=[43,40,36,31,25,18,10,0][stage];
-    const bodyCy=[145,150,156,164,174,188,218,255][stage];
-    const headR=[36,35,33,30,26,21,15,0][stage];
-    const headCy=[83,87,93,101,113,132,184,255][stage];
-    const bodyRx=Math.max(0, 43-stage*2.2);
-    const baseRx=Math.max(0, 54-stage*2.4);
-    const headY=headCy-83;
-    const scarfY=headY + stage*2;
-    const hatY=headY + stage*1.2;
-    const armOpacity=stage<6 ? Math.max(.2,1-stage*.12) : 0;
-    const accessoryOpacity=stage<7 ? Math.max(.25,1-stage*.1) : 0;
-    const buttonOpacity=stage<7 ? Math.max(.15,1-stage*.13) : 0;
-    const puddleRx=72 + stage*18;
-    const puddleRy=10 + stage*2.2;
+    const visible = removeAt => stage < removeAt;
     const warning=stage===6;
     els.snowmanMount.classList.toggle('last-chance', warning);
+
     els.snowmanMount.innerHTML = `
       <svg class="snowman-svg stage-${stage}" viewBox="0 0 320 280" role="img" aria-label="Snowman with ${Math.max(0,MELT_STAGES-stage)} wrong guesses remaining">
-        <ellipse class="puddle" cx="160" cy="258" rx="${puddleRx}" ry="${puddleRy}" fill="#77c9eb" opacity="${.18+stage*.1}"/>
-        <g class="melt-drops" opacity="${stage ? .95 : 0}">
-          <circle cx="122" cy="205" r="5" fill="#dff6ff"/><circle cx="201" cy="165" r="4" fill="#dff6ff"/><circle cx="174" cy="105" r="3.5" fill="#dff6ff"/>
-        </g>
-        ${stage<7 ? `<ellipse cx="160" cy="${baseCy}" rx="${baseRx}" ry="${baseRy}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>` : ''}
-        ${stage<7 ? `<ellipse cx="160" cy="${bodyCy}" rx="${bodyRx}" ry="${bodyRy}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>` : ''}
-        <g opacity="${armOpacity}">
-          <path d="M122 ${143+stage*5} L82 ${118+stage*7} L64 ${121+stage*7}" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <path d="M198 ${143+stage*5} L236 ${116+stage*7} L255 ${111+stage*7}" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
-        </g>
-        ${stage<7 ? `<g transform="translate(0 ${headY})"><circle cx="160" cy="83" r="${headR}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>
-          <circle cx="148" cy="76" r="${Math.max(2.4,4-stage*.18)}" fill="#223645"/><circle cx="173" cy="76" r="${Math.max(2.4,4-stage*.18)}" fill="#223645"/>
-          <path d="M148 95 Q160 ${stage>=6?99:105} 174 94" stroke="#223645" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <g opacity="${accessoryOpacity}">${noseSvg(c.nose)}</g></g>` : ''}
-        ${stage<7 ? `<g transform="translate(0 ${scarfY})" opacity="${accessoryOpacity}">${scarfSvg(c.scarf)}</g>` : ''}
-        ${stage<7 ? `<g transform="translate(0 ${hatY})" opacity="${accessoryOpacity}">${hatSvg(c.hat)}</g>` : ''}
-        ${stage<7 ? `<g transform="translate(0 ${stage*8})" opacity="${buttonOpacity}">${buttonsSvg(c.buttons, stage)}</g>` : ''}
-        ${warning ? `<g class="last-guess-ring"><ellipse cx="160" cy="250" rx="92" ry="22" fill="none" stroke="#e85d4a" stroke-width="5" stroke-dasharray="9 7"/></g>` : ''}
+        <ellipse class="puddle" cx="160" cy="258" rx="${stage ? 76 + stage*9 : 60}" ry="${stage ? 10 + stage*1.4 : 7}" fill="#77c9eb" opacity="${stage ? .22 + stage*.06 : .12}"/>
+
+        ${visible(7) ? `<g class="melt-step-7"><ellipse cx="160" cy="207" rx="54" ry="54" fill="#fff" stroke="#b6d9ea" stroke-width="3"/></g>` : ''}
+        ${visible(6) ? `<g class="melt-step-6"><ellipse cx="160" cy="145" rx="43" ry="43" fill="#fff" stroke="#b6d9ea" stroke-width="3"/></g>` : ''}
+
+        ${visible(4) ? `<g class="melt-step-4">
+          <path d="M122 143 L82 118 L64 121" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M198 143 L236 116 L255 111" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </g>` : ''}
+
+        ${visible(3) ? `<g class="melt-step-3">${scarfSvg(c.scarf)}</g>` : ''}
+
+        ${visible(3) ? `<g class="melt-step-3"><circle cx="160" cy="83" r="36" fill="#fff" stroke="#b6d9ea" stroke-width="3"/></g>` : ''}
+        ${visible(2) ? `<g class="melt-step-2">
+          <circle cx="148" cy="76" r="4" fill="#223645"/><circle cx="173" cy="76" r="4" fill="#223645"/>
+          <path d="M148 95 Q160 105 174 94" stroke="#223645" stroke-width="3" fill="none" stroke-linecap="round"/>
+          ${noseSvg(c.nose)}
+        </g>` : ''}
+
+        ${visible(1) ? `<g class="melt-step-1">${hatSvg(c.hat)}</g>` : ''}
+        ${visible(5) ? `<g class="melt-step-5">${buttonsSvg(c.buttons, 0)}</g>` : ''}
+
+        ${warning ? `<g class="last-guess-ring"><ellipse cx="160" cy="250" rx="82" ry="18" fill="none" stroke="#e85d4a" stroke-width="5" stroke-dasharray="9 7"/></g>` : ''}
       </svg>`;
   }
 
@@ -325,12 +326,21 @@
     openModalId=id; document.getElementById(id).hidden=false; els.modalBackdrop.hidden=false;
     if (id==='grownupsGateModal') makeMathGate();
   }
-  function closeModal() {
-    document.querySelectorAll('.modal').forEach(m=>m.hidden=true); els.modalBackdrop.hidden=true; openModalId=null;
+  function closeModal({suppressSaveFallback=false}={}) {
+    const dismissedSave = openModalId === 'saveModal' && game && game.finished && !game.saved && !suppressSaveFallback;
+    document.querySelectorAll('.modal').forEach(m=>m.hidden=true);
+    els.modalBackdrop.hidden=true;
+    openModalId=null;
+    if (dismissedSave) {
+      renderWord(null, true);
+      setMessage(`The word was ${game.item.word}. Ready for a new snowman?`, 'bad');
+      react('Puddle time! 💧');
+      els.newGameBtn.hidden=false;
+    }
   }
 
   function makeMathGate() {
-    const a=3+Math.floor(Math.random()*7), b=2+Math.floor(Math.random()*7); mathAnswer=a+b;
+    const a=10+Math.floor(Math.random()*90), b=10+Math.floor(Math.random()*90); mathAnswer=a+b;
     els.mathQuestion.textContent=`${a} + ${b} =`; els.mathAnswer.value=''; els.mathFeedback.textContent=''; setTimeout(()=>els.mathAnswer.focus(),80);
   }
   function checkMathGate() {

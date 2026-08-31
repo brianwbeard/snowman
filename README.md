@@ -1,6 +1,19 @@
-# Snowman v1.2.1
+# Snowman v1.3
 
-Hotfix for v1.2:
-- Settings and Progress panels live inside the centered app shell, matching Learn to Readle.
-- CSS and JavaScript URLs are cache-busted with `?v=1.2.1` so GitHub Pages/Safari do not mix old and new assets.
-- Keeps the Learn to Readle-style 📊 and ⚙️ controls and 4–8 letter settings.
+A kid-friendly, unlimited-play word guessing game.
+
+## v1.3 changes
+- Save-the-Snowman dialog can be dismissed without trapping the player; a New Snowman button remains available.
+- Returned to top-down disappearing snowman parts instead of shrinking snowballs.
+- Each disappearing part slowly flashes/fades before vanishing.
+- Final danger state leaves only the bottom snowball, making the last guess visually obvious.
+- Grown-Ups math gate now uses two-digit + two-digit addition.
+- Keyboard is now a compact three-row QWERTY layout.
+- Mobile spacing is tightened so the main game fits better on an iPhone screen.
+
+## Files
+- `index.html`
+- `styles.css`
+- `app.js`
+- `words.js`
+- `README.md`
