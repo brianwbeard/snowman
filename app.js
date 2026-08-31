@@ -26,12 +26,14 @@
   const els = {
     snowmanMount: $('snowmanMount'), reaction: $('reaction'), clueWrap: $('clueWrap'), clueText: $('clueText'),
     wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'),
-    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueToggle: $('clueToggle'),
+    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueButtons: $('clueButtons'),
     modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
     venmoLink: $('venmoLink'),
     winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn'),
-    loseWord: $('loseWord'), loseNextBtn: $('loseNextBtn')
+    loseWord: $('loseWord'), loseNextBtn: $('loseNextBtn'),
+    resetStatsBtn: $('resetStatsBtn'), resetStatsYesBtn: $('resetStatsYesBtn'), resetStatsNoBtn: $('resetStatsNoBtn'),
+    confettiCanvas: $('confettiCanvas')
   };
 
   function loadState() {
@@ -52,7 +54,7 @@
 
   function init() {
     updateLengthButtons();
-    els.clueToggle.checked = state.clues;
+    updateClueButtons();
     els.venmoLink.href = VENMO_URL;
     buildKeyboard();
     bindEvents();
@@ -63,6 +65,14 @@
   function updateLengthButtons() {
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => {
       const selected = Number(btn.dataset.length) === state.length;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function updateClueButtons() {
+    els.clueButtons.querySelectorAll('[data-clues]').forEach(btn => {
+      const selected = (btn.dataset.clues === 'yes') === state.clues;
       btn.classList.toggle('active', selected);
       btn.setAttribute('aria-pressed', String(selected));
     });
@@ -88,7 +98,10 @@
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => btn.addEventListener('click', () => {
       state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); startGame();
     }));
-    els.clueToggle.addEventListener('change', () => { state.clues = els.clueToggle.checked; saveState(); updateClue(); });
+    els.clueButtons.querySelectorAll('[data-clues]').forEach(btn => btn.addEventListener('click', () => {
+      state.clues = btn.dataset.clues === 'yes';
+      saveState(); updateClueButtons(); updateClue();
+    }));
     els.modalBackdrop.addEventListener('click', closeModal);
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeModal));
     document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => {
@@ -100,6 +113,9 @@
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
     els.winNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
     els.loseNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
+    els.resetStatsBtn.addEventListener('click', () => openModal('resetStatsModal', false));
+    els.resetStatsNoBtn.addEventListener('click', closeModal);
+    els.resetStatsYesBtn.addEventListener('click', () => { resetAllStats(); closeModal(); setMessage('Progress reset.'); });
     document.addEventListener('keydown', handlePhysicalKeyboard);
   }
 
@@ -208,7 +224,7 @@
     els.winMessage.textContent='You solved the word!';
     els.winWord.textContent=game.item.word;
     els.newGameBtn.hidden=true;
-    setTimeout(() => openModal('winModal', false), 650);
+    setTimeout(() => { openModal('winModal', false); launchConfetti(); }, 650);
   }
 
   function finishLoss() {
@@ -311,6 +327,13 @@
     return ys.slice(0,remain).map(y => `<circle cx="160" cy="${y}" r="4.5" fill="#354452"/>`).join('');
   }
 
+  function resetAllStats() {
+    state.solved = {};
+    state.seen = {};
+    saveState();
+    renderStats();
+  }
+
   function renderStats() {
     els.statsGrid.innerHTML='';
     let solvedTotal=0, bankTotal=0;
@@ -331,6 +354,7 @@
     if (id==='grownupsGateModal') makeMathGate();
   }
   function closeModal() {
+    stopConfetti();
     const dismissedLoss = openModalId === 'loseModal' && game && game.finished;
     document.querySelectorAll('.modal').forEach(m=>m.hidden=true);
     els.modalBackdrop.hidden=true;
@@ -349,6 +373,40 @@
   function checkMathGate() {
     if (Number(els.mathAnswer.value) === mathAnswer) { document.getElementById('grownupsGateModal').hidden=true; openModalId='grownupsModal'; document.getElementById('grownupsModal').hidden=false; }
     else { els.mathFeedback.textContent='Not quite—try again!'; makeMathGate(); }
+  }
+
+  let confettiAnimationId = null;
+  function launchConfetti() {
+    const canvas=els.confettiCanvas;
+    const ctx=canvas.getContext('2d');
+    const dpr=window.devicePixelRatio || 1, width=window.innerWidth, height=window.innerHeight;
+    canvas.width=width*dpr; canvas.height=height*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0); canvas.classList.add('show');
+    const colors=['#6aaa64','#c9b458','#4f7cac','#ef476f','#ffd166','#8b5cf6'];
+    const pieces=Array.from({length:140},()=>({
+      x:Math.random()*width, y:-20-Math.random()*height*.35, w:6+Math.random()*7, h:9+Math.random()*10,
+      vx:-2+Math.random()*4, vy:2.5+Math.random()*4, rotation:Math.random()*Math.PI,
+      spin:-.15+Math.random()*.3, color:colors[Math.floor(Math.random()*colors.length)]
+    }));
+    const start=performance.now();
+    function frame(now) {
+      ctx.clearRect(0,0,width,height);
+      for (const p of pieces) {
+        p.x+=p.vx; p.y+=p.vy; p.vy+=.025; p.rotation+=p.spin;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rotation); ctx.fillStyle=p.color;
+        ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); ctx.restore();
+      }
+      if (now-start<3500) confettiAnimationId=requestAnimationFrame(frame); else stopConfetti();
+    }
+    if (confettiAnimationId) cancelAnimationFrame(confettiAnimationId);
+    confettiAnimationId=requestAnimationFrame(frame);
+  }
+  function stopConfetti() {
+    if (confettiAnimationId) { cancelAnimationFrame(confettiAnimationId); confettiAnimationId=null; }
+    if (!els.confettiCanvas) return;
+    const ctx=els.confettiCanvas.getContext('2d');
+    ctx.clearRect(0,0,els.confettiCanvas.width,els.confettiCanvas.height);
+    els.confettiCanvas.classList.remove('show');
   }
 
   init();

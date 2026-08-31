@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#eaf7ff" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css?v=1.5" />
+  <link rel="stylesheet" href="styles.css?v=1.6" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -30,7 +30,10 @@
     </section>
     <section class="mode-control" aria-label="Clue setting">
       <strong>Clues</strong>
-      <label class="ltr-toggle-row"><span>Show a clue for each word</span><input id="clueToggle" type="checkbox" /></label>
+      <div class="choice-buttons" id="clueButtons" role="group" aria-label="Clues">
+        <button class="choice-btn" type="button" data-clues="yes">Yes</button>
+        <button class="choice-btn" type="button" data-clues="no">No</button>
+      </div>
     </section>
     <div class="settings-links">
       <button class="settings-link" data-open="aboutModal">About Snowman</button>
@@ -44,6 +47,7 @@
     <p class="progress-subtitle">Unique words solved</p>
     <div class="progress-list" id="statsGrid"></div>
     <div class="progress-total"><span>Total</span><span id="statsTotal">0 / 0</span></div>
+    <div class="reset-progress-wrap"><button class="reset-progress-btn" id="resetStatsBtn" type="button">RESET</button></div>
   </section>
 
     <section class="game-card" aria-live="polite">
@@ -107,6 +111,17 @@
     </div>
   </section>
 
+  <section class="modal result-modal" id="resetStatsModal" hidden role="dialog" aria-modal="true" aria-labelledby="resetStatsTitle">
+    <div class="result-body">
+      <h2 id="resetStatsTitle">Reset progress?</h2>
+      <p>Are you sure you want to reset all progress?</p>
+      <div class="confirm-buttons">
+        <button id="resetStatsNoBtn" class="primary-btn confirm-no" type="button">NO</button>
+        <button id="resetStatsYesBtn" class="primary-btn" type="button">YES</button>
+      </div>
+    </div>
+  </section>
+
   <section class="modal result-modal" id="winModal" hidden role="dialog" aria-modal="true" aria-labelledby="winTitle">
     <div class="result-body">
       <div class="result-snow">☃️</div>
@@ -128,7 +143,8 @@
   </section>
 
   <script src="/learn-to-readle/answers.js"></script>
-  <script src="words.js?v=1.5"></script>
-  <script src="app.js?v=1.5"></script>
+  <script src="words.js?v=1.6"></script>
+  <script src="app.js?v=1.6"></script>
+  <canvas id="confettiCanvas" aria-hidden="true"></canvas>
 </body>
 </html>
