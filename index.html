@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#eaf7ff" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css?v=1.4" />
+  <link rel="stylesheet" href="styles.css?v=1.5" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -73,7 +73,7 @@
     <div class="modal-head"><h2 id="aboutTitle">About Snowman</h2><button class="close-btn" data-close>×</button></div>
     <div class="modal-body prose">
       <p><strong>Snowman</strong> is a kid-friendly word guessing game. Pick letters to uncover the hidden word before your snowman melts away.</p>
-      <p>Correct letters pop into the word. Wrong letters make the snowman melt a little. If he melts completely, you still get one last chance to save him by guessing the whole word.</p>
+      <p>Correct letters pop into the word. Each wrong letter makes one part of the snowman melt away. After seven wrong guesses, the snowman melts completely and the game is over.</p>
       <p>There are unlimited games, word lengths from 4–8 letters, optional clues, and progress tracking for every unique word you solve.</p>
     </div>
   </section>
@@ -117,18 +117,18 @@
     </div>
   </section>
 
-  <section class="modal" id="saveModal" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
-    <div class="modal-head"><h2 id="saveTitle">Save the Snowman!</h2></div>
-    <div class="modal-body">
-      <p class="modal-intro">He's melted into a puddle—but you get one last chance. What was the whole word?</p>
-      <input id="saveGuess" class="save-input" autocomplete="off" autocapitalize="characters" spellcheck="false" />
-      <button id="saveSubmit" class="primary-btn">Save Him!</button>
-      <div id="saveFeedback" class="gate-feedback"></div>
+  <section class="modal result-modal" id="loseModal" hidden role="dialog" aria-modal="true" aria-labelledby="loseTitle">
+    <div class="result-body">
+      <div class="result-snow">💧</div>
+      <h2 id="loseTitle">Oh no — he melted!</h2>
+      <p>The word was:</p>
+      <div id="loseWord" class="result-word"></div>
+      <button id="loseNextBtn" class="primary-btn">New Snowman</button>
     </div>
   </section>
 
   <script src="/learn-to-readle/answers.js"></script>
-  <script src="words.js?v=1.4"></script>
-  <script src="app.js?v=1.4"></script>
+  <script src="words.js?v=1.5"></script>
+  <script src="app.js?v=1.5"></script>
 </body>
 </html>

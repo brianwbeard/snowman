@@ -203,3 +203,28 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
   .key-row { gap: 4px; }
   .key { height: 46px; font-size: 15.5px; }
 }
+
+/* v1.5 — slower child-paced feedback and final melt */
+.snowman-svg.correct { animation: snowBounce 1s ease; }
+.letter-slot.pop { animation: letterPop .85s cubic-bezier(.2,.9,.2,1.3); }
+.reaction.show { animation: reactionPop 1.55s ease; }
+.melting-away {
+  animation: partFlashFade 1.5s ease-in-out forwards;
+}
+@keyframes partFlashFade {
+  0%   { opacity:1; filter:brightness(1); transform:scale(1); }
+  14%  { opacity:.28; filter:brightness(1.7); transform:scale(1.025); }
+  28%  { opacity:1; filter:brightness(1); transform:scale(1); }
+  45%  { opacity:.25; filter:brightness(1.8); transform:scale(1.025); }
+  62%  { opacity:1; filter:brightness(1); transform:scale(1); }
+  78%  { opacity:.30; filter:brightness(1.8); transform:scale(1.02); }
+  100% { opacity:0; filter:brightness(2); transform:scale(.92); }
+}
+.snowman-mount.puddle-finish .puddle { animation:puddleFinish .85s ease-out; }
+@keyframes puddleFinish {
+  0% { transform:scale(1); opacity:.64; }
+  35% { transform:scale(1.18,.78); opacity:.85; }
+  65% { transform:scale(.94,1.08); opacity:.72; }
+  100% { transform:scale(1); opacity:.64; }
+}
+#loseModal .result-word { color:var(--bad); }

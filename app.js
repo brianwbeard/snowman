@@ -29,8 +29,9 @@
     settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueToggle: $('clueToggle'),
     modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
-    venmoLink: $('venmoLink'), saveGuess: $('saveGuess'), saveSubmit: $('saveSubmit'), saveFeedback: $('saveFeedback'),
-    winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn')
+    venmoLink: $('venmoLink'),
+    winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn'),
+    loseWord: $('loseWord'), loseNextBtn: $('loseNextBtn')
   };
 
   function loadState() {
@@ -97,9 +98,8 @@
     }));
     els.mathSubmit.addEventListener('click', checkMathGate);
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
-    els.saveSubmit.addEventListener('click', submitSaveGuess);
-    els.winNextBtn.addEventListener('click', () => { closeModal({suppressSaveFallback:true}); startGame(); });
-    els.saveGuess.addEventListener('keydown', e => { if (e.key === 'Enter') submitSaveGuess(); });
+    els.winNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
+    els.loseNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
     document.addEventListener('keydown', handlePhysicalKeyboard);
   }
 
@@ -140,7 +140,7 @@
   function startGame() {
     const item=pickWord(state.length);
     if (!item) { setMessage('No words are available at this length yet.', 'bad'); return; }
-    game={ item, guessed:new Set(), wrong:0, finished:false, saved:false, cosmetic:randomCosmetic() };
+    game={ item, guessed:new Set(), wrong:0, finished:false, animating:false, cosmetic:randomCosmetic() };
     renderSnowman(); renderWord(); resetKeyboard(); updateClue(); setMessage('Pick a letter!');
     els.newGameBtn.hidden=true;
   }
@@ -154,8 +154,9 @@
   }
 
   function guessLetter(letter) {
-    if (!game || game.finished || game.guessed.has(letter)) return;
+    if (!game || game.finished || game.animating || game.guessed.has(letter)) return;
     game.guessed.add(letter);
+    game.animating=true;
     const correct=game.item.word.includes(letter);
     const key=els.keyboard.querySelector(`[data-letter="${letter}"]`);
     key.disabled=true; key.classList.add(correct?'good':'bad');
@@ -165,7 +166,11 @@
       react(['Woohoo!','Brrr-illiant!','Yes!','☃️✨'][Math.floor(Math.random()*4)]);
       animateSnowman('correct');
       renderWord(letter);
-      if (isSolved()) finishWin(false);
+      const solved=isSolved();
+      setTimeout(() => {
+        if (solved) finishWin();
+        else game.animating=false;
+      }, 1050);
     } else {
       game.wrong++;
       const remaining = MELT_STAGES - game.wrong;
@@ -173,55 +178,51 @@
         setMessage('⚠️ LAST GUESS — keep him from melting!', 'danger');
         react('ONE GUESS LEFT!');
       } else if (remaining === 0) {
-        setMessage('Oh no — puddle time!', 'bad');
+        setMessage('Oh no — he melted!', 'bad');
         react('MELTED! 💧');
       } else {
         setMessage(['Nope—he’s melting!','Brrr... too warm!','Drip, drip!','Uh-oh!'][Math.floor(Math.random()*4)], 'bad');
-        react(['Too warm!','Drip!','I’m shrinking!','😅'][Math.floor(Math.random()*4)]);
+        react(['Too warm!','Drip!','Oh no!','😅'][Math.floor(Math.random()*4)]);
       }
       animateMelt(() => {
         renderSnowman();
-        if (game.wrong >= MELT_STAGES) beginSaveChance();
+        if (game.wrong >= MELT_STAGES) {
+          finishLoss();
+        } else {
+          game.animating=false;
+        }
       });
     }
   }
 
   function isSolved() { return [...game.item.word].every(ch => game.guessed.has(ch)); }
 
-  function finishWin(saved) {
-    game.finished=true; game.saved=saved;
+  function finishWin() {
+    game.finished=true;
+    game.animating=false;
     markSolved(game.item.word);
     renderWord(null, true);
     disableKeyboard();
-    if (saved) {
-      game.wrong=0; renderSnowman(true); react('SAVED! ☃️'); setMessage('You saved the snowman!', 'good');
-      els.winMessage.textContent='You saved the snowman and solved the word!';
-    } else {
-      react('Hooray! ❄️'); setMessage('You got it!', 'good');
-      els.winMessage.textContent='You solved the word!';
-    }
+    react('Hooray! ❄️');
+    setMessage('You got it!', 'good');
+    els.winMessage.textContent='You solved the word!';
     els.winWord.textContent=game.item.word;
     els.newGameBtn.hidden=true;
-    setTimeout(() => openModal('winModal', false), 450);
+    setTimeout(() => openModal('winModal', false), 650);
   }
 
-  function beginSaveChance() {
-    game.finished=true; disableKeyboard(); renderSnowman();
-    setTimeout(() => { els.saveGuess.value=''; els.saveGuess.maxLength=game.item.word.length; els.saveFeedback.textContent=''; openModal('saveModal', false); setTimeout(()=>els.saveGuess.focus(),80); }, 420);
-  }
-
-  function submitSaveGuess() {
-    const guess=els.saveGuess.value.trim().toUpperCase().replace(/[^A-Z]/g,'');
-    if (!guess) { els.saveFeedback.textContent='Type the whole word first.'; return; }
-    if (guess === game.item.word) {
-      closeModal({suppressSaveFallback:true}); finishWin(true);
-    } else {
-      closeModal({suppressSaveFallback:true});
-      renderWord(null, true);
-      setMessage(`The word was ${game.item.word}. New snowman?`, 'bad');
-      react('Puddle time! 💧');
-      els.newGameBtn.hidden=false;
-    }
+  function finishLoss() {
+    game.finished=true;
+    game.animating=false;
+    disableKeyboard();
+    renderWord(null, true);
+    els.loseWord.textContent=game.item.word;
+    els.newGameBtn.hidden=true;
+    els.snowmanMount.classList.add('puddle-finish');
+    setTimeout(() => {
+      els.snowmanMount.classList.remove('puddle-finish');
+      openModal('loseModal', false);
+    }, 900);
   }
 
   function markSolved(word) {
@@ -247,11 +248,11 @@
   function animateSnowman(cls) { const svg=els.snowmanMount.querySelector('svg'); if (!svg) return; svg.classList.remove('correct','wrong'); void svg.offsetWidth; svg.classList.add(cls); }
   function animateMelt(done) {
     const target=els.snowmanMount.querySelector(`.melt-step-${game.wrong}`);
-    if (!target) { setTimeout(done, 120); return; }
+    if (!target) { setTimeout(done, 220); return; }
     target.classList.remove('melting-away');
     void target.getBoundingClientRect();
     target.classList.add('melting-away');
-    setTimeout(done, 900);
+    setTimeout(done, 1550);
   }
 
   function renderSnowman(restored=false) {
@@ -329,13 +330,12 @@
     openModalId=id; document.getElementById(id).hidden=false; els.modalBackdrop.hidden=false;
     if (id==='grownupsGateModal') makeMathGate();
   }
-  function closeModal({suppressSaveFallback=false}={}) {
-    const dismissedSave = openModalId === 'saveModal' && game && game.finished && !game.saved && !suppressSaveFallback;
+  function closeModal() {
+    const dismissedLoss = openModalId === 'loseModal' && game && game.finished;
     document.querySelectorAll('.modal').forEach(m=>m.hidden=true);
     els.modalBackdrop.hidden=true;
     openModalId=null;
-    if (dismissedSave) {
-      renderWord(null, true);
+    if (dismissedLoss) {
       setMessage(`The word was ${game.item.word}. Ready for a new snowman?`, 'bad');
       react('Puddle time! 💧');
       els.newGameBtn.hidden=false;
