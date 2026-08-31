@@ -2,12 +2,16 @@
   'use strict';
 
   // Replace this with the exact Venmo support URL used in Learn to Readle.
-  const VENMO_URL = 'https://venmo.com/';
+  const VENMO_URL = 'https://venmo.com/u/brianwbeard';
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
   const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-  const words = window.SNOWMAN_WORDS || [];
+  if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS)) {
+    document.body.innerHTML = "<p style='font-family:sans-serif;padding:20px'>Word data failed to load. Please refresh the page.</p>";
+    throw new Error('words.js did not load');
+  }
+  const words = window.SNOWMAN_WORDS;
   const byLength = Object.fromEntries(Array.from({length:5}, (_,i) => [i+4, words.filter(w => w.word.length === i+4)]));
 
   const state = loadState();
@@ -20,7 +24,7 @@
     snowmanMount: $('snowmanMount'), reaction: $('reaction'), clueWrap: $('clueWrap'), clueText: $('clueText'),
     wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'),
     settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueToggle: $('clueToggle'),
-    modalBackdrop: $('modalBackdrop'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
+    modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
     venmoLink: $('venmoLink'), saveGuess: $('saveGuess'), saveSubmit: $('saveSubmit'), saveFeedback: $('saveFeedback'),
     winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn')
@@ -55,22 +59,39 @@
   function updateLengthButtons() {
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => {
       const selected = Number(btn.dataset.length) === state.length;
-      btn.classList.toggle('selected', selected);
+      btn.classList.toggle('active', selected);
       btn.setAttribute('aria-pressed', String(selected));
     });
   }
 
   function bindEvents() {
-    els.settingsBtn.addEventListener('click', () => openModal('settingsModal'));
-    els.statsBtn.addEventListener('click', () => { renderStats(); openModal('statsModal'); });
+    els.settingsBtn.addEventListener('click', () => {
+      const willOpen = !els.settingsPanel.classList.contains('show');
+      els.statsPanel.classList.remove('show');
+      els.statsBtn.setAttribute('aria-expanded','false');
+      els.settingsPanel.classList.toggle('show', willOpen);
+      els.settingsBtn.setAttribute('aria-expanded', String(willOpen));
+    });
+    els.statsBtn.addEventListener('click', () => {
+      const willOpen = !els.statsPanel.classList.contains('show');
+      els.settingsPanel.classList.remove('show');
+      els.settingsBtn.setAttribute('aria-expanded','false');
+      if (willOpen) renderStats();
+      els.statsPanel.classList.toggle('show', willOpen);
+      els.statsBtn.setAttribute('aria-expanded', String(willOpen));
+    });
     els.newGameBtn.addEventListener('click', startGame);
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => btn.addEventListener('click', () => {
-      state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); closeModal(); startGame();
+      state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); startGame();
     }));
     els.clueToggle.addEventListener('change', () => { state.clues = els.clueToggle.checked; saveState(); updateClue(); });
     els.modalBackdrop.addEventListener('click', closeModal);
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeModal));
-    document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => openModal(btn.dataset.open)));
+    document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => {
+      els.settingsPanel.classList.remove('show');
+      els.settingsBtn.setAttribute('aria-expanded','false');
+      openModal(btn.dataset.open);
+    }));
     els.mathSubmit.addEventListener('click', checkMathGate);
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
     els.saveSubmit.addEventListener('click', submitSaveGuess);
@@ -291,12 +312,12 @@
     for (let len=4; len<=8; len++) {
       const bank=byLength[len].length; const solved=(state.solved[len] || []).filter(w => byLength[len].some(x=>x.word===w)).length;
       solvedTotal+=solved; bankTotal+=bank;
-      const pct=bank ? (solved/bank)*100 : 0;
-      const card=document.createElement('div'); card.className='stat-card';
-      card.innerHTML=`<div class="stat-row"><div class="stat-length">${len}-letter words</div><div class="stat-count">${solved} / ${bank}</div></div><div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>`;
-      els.statsGrid.appendChild(card);
+      const row=document.createElement('div'); row.className='progress-row';
+      const label=document.createElement('span'); label.className='progress-label'; label.textContent=`${len} letters`;
+      const count=document.createElement('span'); count.className='progress-count'; count.textContent=`${solved} / ${bank}`;
+      row.append(label,count); els.statsGrid.appendChild(row);
     }
-    els.statsTotal.innerHTML=`<strong>${solvedTotal}</strong><span>of ${bankTotal} words solved</span>`;
+    els.statsTotal.textContent=`${solvedTotal} / ${bankTotal}`;
   }
 
   function openModal(id, allowStack=true) {

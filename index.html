@@ -12,10 +12,8 @@
     <header class="topbar">
       <div class="brand" aria-label="Snowman">☃️ <span>Snowman</span></div>
       <div class="topbar-actions">
-        <button class="icon-btn" id="statsBtn" aria-label="Progress" title="Progress">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/></svg>
-        </button>
-        <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">⚙</button>
+        <button class="gear-btn" id="statsBtn" aria-label="Progress" aria-expanded="false">📊</button>
+        <button class="gear-btn" id="settingsBtn" aria-label="Settings" aria-expanded="false">⚙️</button>
       </div>
     </header>
 
@@ -40,40 +38,36 @@
     </section>
   </main>
 
+  <div class="settings-panel" id="settingsPanel">
+    <section class="controls" aria-label="Game settings">
+      <strong>How many letters?</strong>
+      <div class="length-buttons" id="lengthButtons" role="group" aria-label="Word length">
+        <button class="length-btn" type="button" data-length="4">4</button>
+        <button class="length-btn" type="button" data-length="5">5</button>
+        <button class="length-btn" type="button" data-length="6">6</button>
+        <button class="length-btn" type="button" data-length="7">7</button>
+        <button class="length-btn" type="button" data-length="8">8</button>
+      </div>
+    </section>
+    <section class="mode-control" aria-label="Clue setting">
+      <strong>Clues</strong>
+      <label class="ltr-toggle-row"><span>Show a clue for each word</span><input id="clueToggle" type="checkbox" /></label>
+    </section>
+    <div class="settings-links">
+      <button class="settings-link" data-open="aboutModal">About Snowman</button>
+      <button class="settings-link" data-open="privacyModal">Privacy</button>
+      <button class="settings-link" data-open="grownupsGateModal">For Parents &amp; Grown-Ups</button>
+    </div>
+  </div>
+
+  <section class="progress-panel" id="statsPanel" aria-label="Word progress">
+    <h2>Your Progress</h2>
+    <p class="progress-subtitle">Unique words solved</p>
+    <div class="progress-list" id="statsGrid"></div>
+    <div class="progress-total"><span>Total</span><span id="statsTotal">0 / 0</span></div>
+  </section>
+
   <div id="modalBackdrop" class="modal-backdrop" hidden></div>
-
-  <section class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
-    <div class="modal-head"><h2 id="settingsTitle">Settings</h2><button class="close-btn" data-close>×</button></div>
-    <div class="modal-body">
-      <div class="setting-group">
-        <div class="setting-title">Word Length</div>
-        <div class="length-buttons" id="lengthButtons" role="group" aria-label="Word length">
-          <button type="button" data-length="4">4</button>
-          <button type="button" data-length="5">5</button>
-          <button type="button" data-length="6">6</button>
-          <button type="button" data-length="7">7</button>
-          <button type="button" data-length="8">8</button>
-        </div>
-      </div>
-
-      <label class="toggle-row"><span>Show Clues</span><input type="checkbox" id="clueToggle" /></label>
-
-      <div class="menu-list">
-        <button data-open="aboutModal">About the Game <span>›</span></button>
-        <button data-open="grownupsGateModal">Grown-Ups <span>›</span></button>
-        <button data-open="privacyModal">Privacy <span>›</span></button>
-      </div>
-    </div>
-  </section>
-
-  <section class="modal" id="statsModal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
-    <div class="modal-head"><h2 id="statsTitle">Words Solved</h2><button class="close-btn" data-close>×</button></div>
-    <div class="modal-body">
-      <div id="statsTotal" class="stats-total stats-total-top"></div>
-      <p class="modal-intro stats-subtitle">Unique words solved</p>
-      <div id="statsGrid" class="stats-grid"></div>
-    </div>
-  </section>
 
   <section class="modal" id="aboutModal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
     <div class="modal-head"><h2 id="aboutTitle">About Snowman</h2><button class="close-btn" data-close>×</button></div>
