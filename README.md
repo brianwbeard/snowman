@@ -1,19 +1,13 @@
-# Snowman v1.3
+# Snowman v1.4
 
-A kid-friendly, unlimited-play word guessing game.
+A kid-friendly letter guessing game.
 
-## v1.3 changes
-- Save-the-Snowman dialog can be dismissed without trapping the player; a New Snowman button remains available.
-- Returned to top-down disappearing snowman parts instead of shrinking snowballs.
-- Each disappearing part slowly flashes/fades before vanishing.
-- Final danger state leaves only the bottom snowball, making the last guess visually obvious.
-- Grown-Ups math gate now uses two-digit + two-digit addition.
-- Keyboard is now a compact three-row QWERTY layout.
-- Mobile spacing is tightened so the main game fits better on an iPhone screen.
+## v1.4 changes
+- Uses Learn to Readle's reviewed `answers.js` as the single source of secret words.
+- Snowman automatically filters the shared bank to 4–8 letters (1,139 words in LTR v11.3).
+- `words.js` now contains only Snowman-specific clue overrides/adaptation logic, not a duplicate secret-word list.
+- Existing curated Snowman clues are preserved where available; other shared words currently use a neutral clue fallback.
+- QWERTY keyboard keys and spacing are enlarged to be closer to a native phone keyboard for easier kid tapping.
 
-## Files
-- `index.html`
-- `styles.css`
-- `app.js`
-- `words.js`
-- `README.md`
+## Shared word source
+`index.html` loads `/learn-to-readle/answers.js` before `words.js`. Update the reviewed secret-answer list in Learn to Readle and Snowman will use the updated 4–8-letter subset automatically.

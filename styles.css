@@ -175,3 +175,31 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
   .key { height:39px; border-radius:7px; font-size:15px; padding:0; }
   .primary-btn { min-height:44px; padding:8px 14px; }
 }
+
+
+/* v1.4 — roomier phone-style QWERTY keyboard */
+.keyboard {
+  gap: 7px;
+  max-width: 640px;
+  margin: 9px auto 11px;
+}
+.key-row { gap: 6px; }
+.key-row:nth-child(1) { width: 100%; }
+.key-row:nth-child(2) { width: 91%; }
+.key-row:nth-child(3) { width: 72%; }
+.key {
+  height: 48px;
+  max-width: 58px;
+  border-radius: 7px;
+  font-size: 17px;
+  font-weight: 800;
+}
+@media (max-width:520px) {
+  .keyboard { gap: 7px; margin: 7px auto 8px; }
+  .key-row { gap: 5px; }
+  .key { height: 46px; border-radius: 6px; font-size: 16px; }
+}
+@media (max-width:390px) {
+  .key-row { gap: 4px; }
+  .key { height: 46px; font-size: 15.5px; }
+}

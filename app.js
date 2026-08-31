@@ -7,9 +7,12 @@
   const STORAGE_KEY = 'snowman-v1-state';
   const KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
 
-  if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS)) {
-    document.body.innerHTML = "<p style='font-family:sans-serif;padding:20px'>Word data failed to load. Please refresh the page.</p>";
-    throw new Error('words.js did not load');
+  if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS) || window.SNOWMAN_WORDS.length === 0) {
+    const detail = window.SNOWMAN_WORD_SOURCE_ERROR
+      ? 'The shared Learn to Readle word bank could not be loaded.'
+      : 'Word data failed to load.';
+    document.body.innerHTML = `<p style="font-family:sans-serif;padding:20px">${detail} Please refresh the page.</p>`;
+    throw new Error(detail);
   }
   const words = window.SNOWMAN_WORDS;
   const byLength = Object.fromEntries(Array.from({length:5}, (_,i) => [i+4, words.filter(w => w.word.length === i+4)]));
