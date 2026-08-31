@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#eaf7ff" />
+  <title>Snowman</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell" id="app">
+    <header class="topbar">
+      <button class="icon-btn" id="statsBtn" aria-label="Progress">▥</button>
+      <div class="brand" aria-label="Snowman">☃️ <span>Snowman</span></div>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button>
+    </header>
+
+    <section class="game-card" aria-live="polite">
+      <div class="snow-scene" id="snowScene">
+        <div class="sky-dots" aria-hidden="true"></div>
+        <div id="snowmanMount" class="snowman-mount"></div>
+        <div id="reaction" class="reaction" aria-live="polite"></div>
+      </div>
+
+      <div class="clue-wrap" id="clueWrap" hidden>
+        <span class="clue-label">Clue</span>
+        <span id="clueText"></span>
+      </div>
+
+      <div id="wordDisplay" class="word-display" aria-label="Word"></div>
+      <div id="message" class="message" aria-live="polite">Pick a letter!</div>
+
+      <div id="keyboard" class="keyboard" aria-label="Letter keyboard"></div>
+
+      <button id="newGameBtn" class="primary-btn" hidden>New Snowman</button>
+    </section>
+  </main>
+
+  <div id="modalBackdrop" class="modal-backdrop" hidden></div>
+
+  <section class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-head"><h2 id="settingsTitle">Settings</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body">
+      <label class="field-label" for="lengthSelect">Word length</label>
+      <select id="lengthSelect"></select>
+
+      <label class="toggle-row"><span>Show clues</span><input type="checkbox" id="clueToggle" /></label>
+
+      <div class="menu-list">
+        <button data-open="aboutModal">About the Game <span>›</span></button>
+        <button data-open="grownupsGateModal">Grown-Ups <span>›</span></button>
+        <button data-open="privacyModal">Privacy <span>›</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="modal" id="statsModal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+    <div class="modal-head"><h2 id="statsTitle">Words Solved</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body">
+      <p class="modal-intro">Every word only counts once. See how much of Snowman's word bank you've discovered.</p>
+      <div id="statsGrid" class="stats-grid"></div>
+      <div id="statsTotal" class="stats-total"></div>
+    </div>
+  </section>
+
+  <section class="modal" id="aboutModal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="modal-head"><h2 id="aboutTitle">About Snowman</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body prose">
+      <p><strong>Snowman</strong> is a kid-friendly word guessing game. Pick letters to uncover the hidden word before your snowman melts away.</p>
+      <p>Correct letters pop into the word. Wrong letters make the snowman melt a little. If he melts completely, you still get one last chance to save him by guessing the whole word.</p>
+      <p>There are unlimited games, word lengths from 4–10 letters, optional clues, and progress tracking for every unique word you solve.</p>
+    </div>
+  </section>
+
+  <section class="modal" id="privacyModal" hidden role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <div class="modal-head"><h2 id="privacyTitle">Privacy</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body prose">
+      <p>Snowman does not require an account and does not ask for your name, email address, or other personal information.</p>
+      <p>Your settings and solved-word progress are stored locally in your browser on this device. That information is not sent to a server by this version of the game.</p>
+      <p>If you clear your browser's site data, use a different browser, or use another device, your local progress may not carry over.</p>
+      <p>Links to third-party services, such as Venmo, are governed by those services' own privacy policies.</p>
+    </div>
+  </section>
+
+  <section class="modal" id="grownupsGateModal" hidden role="dialog" aria-modal="true" aria-labelledby="gateTitle">
+    <div class="modal-head"><h2 id="gateTitle">Grown-Ups Only</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body">
+      <p class="modal-intro">Solve this quick grown-up check:</p>
+      <div class="math-gate"><span id="mathQuestion"></span><input id="mathAnswer" inputmode="numeric" aria-label="Math answer" /></div>
+      <button id="mathSubmit" class="primary-btn">Continue</button>
+      <div id="mathFeedback" class="gate-feedback"></div>
+    </div>
+  </section>
+
+  <section class="modal" id="grownupsModal" hidden role="dialog" aria-modal="true" aria-labelledby="grownupsTitle">
+    <div class="modal-head"><h2 id="grownupsTitle">Grown-Ups</h2><button class="close-btn" data-close>×</button></div>
+    <div class="modal-body prose">
+      <p>Snowman is a small, independent word game made to be fun for kids and grown-ups alike.</p>
+      <p>If your family enjoys playing and you'd like to support the project, you can use the optional Venmo link below. No contribution is expected or required.</p>
+      <a id="venmoLink" class="primary-btn link-btn" href="#" target="_blank" rel="noopener noreferrer">Support Snowman on Venmo</a>
+      <p class="tiny-note">Parent note: set your Venmo URL in <code>app.js</code> before publishing.</p>
+    </div>
+  </section>
+
+  <section class="modal" id="saveModal" hidden role="dialog" aria-modal="true" aria-labelledby="saveTitle">
+    <div class="modal-head"><h2 id="saveTitle">Save the Snowman!</h2></div>
+    <div class="modal-body">
+      <p class="modal-intro">He's melted into a puddle—but you get one last chance. What was the whole word?</p>
+      <input id="saveGuess" class="save-input" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+      <button id="saveSubmit" class="primary-btn">Save Him!</button>
+      <div id="saveFeedback" class="gate-feedback"></div>
+    </div>
+  </section>
+
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
