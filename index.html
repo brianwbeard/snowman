@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#eaf7ff" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1.2.1" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -17,29 +17,8 @@
       </div>
     </header>
 
-    <section class="game-card" aria-live="polite">
-      <div class="snow-scene" id="snowScene">
-        <div class="sky-dots" aria-hidden="true"></div>
-        <div id="snowmanMount" class="snowman-mount"></div>
-        <div id="reaction" class="reaction" aria-live="polite"></div>
-      </div>
-
-      <div class="clue-wrap" id="clueWrap" hidden>
-        <span class="clue-label">Clue</span>
-        <span id="clueText"></span>
-      </div>
-
-      <div id="wordDisplay" class="word-display" aria-label="Word"></div>
-      <div id="message" class="message" aria-live="polite">Pick a letter!</div>
-
-      <div id="keyboard" class="keyboard" aria-label="Letter keyboard"></div>
-
-      <button id="newGameBtn" class="primary-btn" hidden>New Snowman</button>
-    </section>
-  </main>
-
   <div class="settings-panel" id="settingsPanel">
-    <section class="controls" aria-label="Game settings">
+      <section class="controls" aria-label="Game settings">
       <strong>How many letters?</strong>
       <div class="length-buttons" id="lengthButtons" role="group" aria-label="Word length">
         <button class="length-btn" type="button" data-length="4">4</button>
@@ -66,6 +45,27 @@
     <div class="progress-list" id="statsGrid"></div>
     <div class="progress-total"><span>Total</span><span id="statsTotal">0 / 0</span></div>
   </section>
+
+    <section class="game-card" aria-live="polite">
+      <div class="snow-scene" id="snowScene">
+        <div class="sky-dots" aria-hidden="true"></div>
+        <div id="snowmanMount" class="snowman-mount"></div>
+        <div id="reaction" class="reaction" aria-live="polite"></div>
+      </div>
+
+      <div class="clue-wrap" id="clueWrap" hidden>
+        <span class="clue-label">Clue</span>
+        <span id="clueText"></span>
+      </div>
+
+      <div id="wordDisplay" class="word-display" aria-label="Word"></div>
+      <div id="message" class="message" aria-live="polite">Pick a letter!</div>
+
+      <div id="keyboard" class="keyboard" aria-label="Letter keyboard"></div>
+
+      <button id="newGameBtn" class="primary-btn" hidden>New Snowman</button>
+    </section>
+  </main>
 
   <div id="modalBackdrop" class="modal-backdrop" hidden></div>
 
@@ -128,7 +128,7 @@
     </div>
   </section>
 
-  <script src="words.js"></script>
-  <script src="app.js"></script>
+  <script src="words.js?v=1.2.1"></script>
+  <script src="app.js?v=1.2.1"></script>
 </body>
 </html>

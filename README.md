@@ -1,19 +1,6 @@
-# Snowman — V1.1
+# Snowman v1.2.1
 
-A kid-friendly word guessing game for GitHub Pages.
-
-## V1.1 changes
-- Progressive snowman melting/squashing animation and growing puddle
-- Clear one-guess-left visual warning
-- Fully melted final state removes buttons and accessories
-- Congratulations popup after solving a word
-- 4–8 letter words only
-- Button-based word-length selector
-- Updated progress/chart icon and top-right controls
-- Progress and Settings modals restyled to align more closely with Learn to Readle
-
-## Files
-Upload `index.html`, `styles.css`, `app.js`, and `words.js` to the repository root.
-
-## Venmo
-Replace the placeholder `VENMO_URL` near the top of `app.js` with the desired support URL.
+Hotfix for v1.2:
+- Settings and Progress panels live inside the centered app shell, matching Learn to Readle.
+- CSS and JavaScript URLs are cache-busted with `?v=1.2.1` so GitHub Pages/Safari do not mix old and new assets.
+- Keeps the Learn to Readle-style 📊 and ⚙️ controls and 4–8 letter settings.
