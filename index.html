@@ -10,9 +10,13 @@
 <body>
   <main class="app-shell" id="app">
     <header class="topbar">
-      <button class="icon-btn" id="statsBtn" aria-label="Progress">▥</button>
       <div class="brand" aria-label="Snowman">☃️ <span>Snowman</span></div>
-      <button class="icon-btn" id="settingsBtn" aria-label="Settings">⚙</button>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="statsBtn" aria-label="Progress" title="Progress">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/></svg>
+        </button>
+        <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">⚙</button>
+      </div>
     </header>
 
     <section class="game-card" aria-live="polite">
@@ -41,10 +45,18 @@
   <section class="modal" id="settingsModal" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
     <div class="modal-head"><h2 id="settingsTitle">Settings</h2><button class="close-btn" data-close>×</button></div>
     <div class="modal-body">
-      <label class="field-label" for="lengthSelect">Word length</label>
-      <select id="lengthSelect"></select>
+      <div class="setting-group">
+        <div class="setting-title">Word Length</div>
+        <div class="length-buttons" id="lengthButtons" role="group" aria-label="Word length">
+          <button type="button" data-length="4">4</button>
+          <button type="button" data-length="5">5</button>
+          <button type="button" data-length="6">6</button>
+          <button type="button" data-length="7">7</button>
+          <button type="button" data-length="8">8</button>
+        </div>
+      </div>
 
-      <label class="toggle-row"><span>Show clues</span><input type="checkbox" id="clueToggle" /></label>
+      <label class="toggle-row"><span>Show Clues</span><input type="checkbox" id="clueToggle" /></label>
 
       <div class="menu-list">
         <button data-open="aboutModal">About the Game <span>›</span></button>
@@ -57,9 +69,9 @@
   <section class="modal" id="statsModal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
     <div class="modal-head"><h2 id="statsTitle">Words Solved</h2><button class="close-btn" data-close>×</button></div>
     <div class="modal-body">
-      <p class="modal-intro">Every word only counts once. See how much of Snowman's word bank you've discovered.</p>
+      <div id="statsTotal" class="stats-total stats-total-top"></div>
+      <p class="modal-intro stats-subtitle">Unique words solved</p>
       <div id="statsGrid" class="stats-grid"></div>
-      <div id="statsTotal" class="stats-total"></div>
     </div>
   </section>
 
@@ -68,7 +80,7 @@
     <div class="modal-body prose">
       <p><strong>Snowman</strong> is a kid-friendly word guessing game. Pick letters to uncover the hidden word before your snowman melts away.</p>
       <p>Correct letters pop into the word. Wrong letters make the snowman melt a little. If he melts completely, you still get one last chance to save him by guessing the whole word.</p>
-      <p>There are unlimited games, word lengths from 4–10 letters, optional clues, and progress tracking for every unique word you solve.</p>
+      <p>There are unlimited games, word lengths from 4–8 letters, optional clues, and progress tracking for every unique word you solve.</p>
     </div>
   </section>
 
@@ -99,6 +111,16 @@
       <p>If your family enjoys playing and you'd like to support the project, you can use the optional Venmo link below. No contribution is expected or required.</p>
       <a id="venmoLink" class="primary-btn link-btn" href="#" target="_blank" rel="noopener noreferrer">Support Snowman on Venmo</a>
       <p class="tiny-note">Parent note: set your Venmo URL in <code>app.js</code> before publishing.</p>
+    </div>
+  </section>
+
+  <section class="modal result-modal" id="winModal" hidden role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <div class="result-body">
+      <div class="result-snow">☃️</div>
+      <h2 id="winTitle">Congratulations!</h2>
+      <p id="winMessage">You solved the word!</p>
+      <div id="winWord" class="result-word"></div>
+      <button id="winNextBtn" class="primary-btn">New Snowman</button>
     </div>
   </section>
 

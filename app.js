@@ -8,7 +8,7 @@
   const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
   const words = window.SNOWMAN_WORDS || [];
-  const byLength = Object.fromEntries(Array.from({length:7}, (_,i) => [i+4, words.filter(w => w.word.length === i+4)]));
+  const byLength = Object.fromEntries(Array.from({length:5}, (_,i) => [i+4, words.filter(w => w.word.length === i+4)]));
 
   const state = loadState();
   let game = null;
@@ -19,17 +19,18 @@
   const els = {
     snowmanMount: $('snowmanMount'), reaction: $('reaction'), clueWrap: $('clueWrap'), clueText: $('clueText'),
     wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'),
-    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthSelect: $('lengthSelect'), clueToggle: $('clueToggle'),
+    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueToggle: $('clueToggle'),
     modalBackdrop: $('modalBackdrop'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
-    venmoLink: $('venmoLink'), saveGuess: $('saveGuess'), saveSubmit: $('saveSubmit'), saveFeedback: $('saveFeedback')
+    venmoLink: $('venmoLink'), saveGuess: $('saveGuess'), saveSubmit: $('saveSubmit'), saveFeedback: $('saveFeedback'),
+    winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn')
   };
 
   function loadState() {
     try {
       const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
       return {
-        length: Number(raw.length) >= 4 && Number(raw.length) <= 10 ? Number(raw.length) : 5,
+        length: Number(raw.length) >= 4 && Number(raw.length) <= 8 ? Number(raw.length) : 5,
         clues: raw.clues !== false,
         solved: raw.solved && typeof raw.solved === 'object' ? raw.solved : {},
         seen: raw.seen && typeof raw.seen === 'object' ? raw.seen : {}
@@ -42,10 +43,7 @@
   function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
   function init() {
-    for (let n=4; n<=10; n++) {
-      const opt = document.createElement('option'); opt.value=n; opt.textContent=`${n} letters`; els.lengthSelect.appendChild(opt);
-    }
-    els.lengthSelect.value = String(state.length);
+    updateLengthButtons();
     els.clueToggle.checked = state.clues;
     els.venmoLink.href = VENMO_URL;
     buildKeyboard();
@@ -53,11 +51,22 @@
     startGame();
   }
 
+
+  function updateLengthButtons() {
+    els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => {
+      const selected = Number(btn.dataset.length) === state.length;
+      btn.classList.toggle('selected', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
   function bindEvents() {
     els.settingsBtn.addEventListener('click', () => openModal('settingsModal'));
     els.statsBtn.addEventListener('click', () => { renderStats(); openModal('statsModal'); });
     els.newGameBtn.addEventListener('click', startGame);
-    els.lengthSelect.addEventListener('change', () => { state.length = Number(els.lengthSelect.value); saveState(); closeModal(); startGame(); });
+    els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => btn.addEventListener('click', () => {
+      state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); closeModal(); startGame();
+    }));
     els.clueToggle.addEventListener('change', () => { state.clues = els.clueToggle.checked; saveState(); updateClue(); });
     els.modalBackdrop.addEventListener('click', closeModal);
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeModal));
@@ -65,6 +74,7 @@
     els.mathSubmit.addEventListener('click', checkMathGate);
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
     els.saveSubmit.addEventListener('click', submitSaveGuess);
+    els.winNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
     els.saveGuess.addEventListener('keydown', e => { if (e.key === 'Enter') submitSaveGuess(); });
     document.addEventListener('keydown', handlePhysicalKeyboard);
   }
@@ -124,11 +134,21 @@
       if (isSolved()) finishWin(false);
     } else {
       game.wrong++;
-      setMessage(['Nope—little melt!','Brrr... not that one!','Drip, drip!','Oops!'][Math.floor(Math.random()*4)], 'bad');
-      react(['Uh-oh!','Too warm!','Drip!','😅'][Math.floor(Math.random()*4)]);
-      animateSnowman('wrong');
-      renderSnowman();
-      if (game.wrong >= MELT_STAGES) beginSaveChance();
+      const remaining = MELT_STAGES - game.wrong;
+      if (remaining === 1) {
+        setMessage('⚠️ LAST GUESS — keep him from melting!', 'danger');
+        react('ONE GUESS LEFT!');
+      } else if (remaining === 0) {
+        setMessage('Oh no — puddle time!', 'bad');
+        react('MELTED! 💧');
+      } else {
+        setMessage(['Nope—he’s melting!','Brrr... too warm!','Drip, drip!','Uh-oh!'][Math.floor(Math.random()*4)], 'bad');
+        react(['Too warm!','Drip!','I’m shrinking!','😅'][Math.floor(Math.random()*4)]);
+      }
+      animateMelt(() => {
+        renderSnowman();
+        if (game.wrong >= MELT_STAGES) beginSaveChance();
+      });
     }
   }
 
@@ -138,12 +158,17 @@
     game.finished=true; game.saved=saved;
     markSolved(game.item.word);
     renderWord(null, true);
+    disableKeyboard();
     if (saved) {
       game.wrong=0; renderSnowman(true); react('SAVED! ☃️'); setMessage('You saved the snowman!', 'good');
+      els.winMessage.textContent='You saved the snowman and solved the word!';
     } else {
       react('Hooray! ❄️'); setMessage('You got it!', 'good');
+      els.winMessage.textContent='You solved the word!';
     }
-    disableKeyboard(); els.newGameBtn.hidden=false;
+    els.winWord.textContent=game.item.word;
+    els.newGameBtn.hidden=true;
+    setTimeout(() => openModal('winModal', false), 450);
   }
 
   function beginSaveChance() {
@@ -186,30 +211,56 @@
   function setMessage(text, cls='') { els.message.textContent=text; els.message.className=`message ${cls}`.trim(); }
   function react(text) { els.reaction.textContent=text; els.reaction.classList.remove('show'); void els.reaction.offsetWidth; els.reaction.classList.add('show'); }
   function animateSnowman(cls) { const svg=els.snowmanMount.querySelector('svg'); if (!svg) return; svg.classList.remove('correct','wrong'); void svg.offsetWidth; svg.classList.add(cls); }
+  function animateMelt(done) {
+    const svg=els.snowmanMount.querySelector('svg');
+    if (!svg) { done(); return; }
+    svg.classList.remove('melt-pulse'); void svg.offsetWidth; svg.classList.add('melt-pulse');
+    const drops=els.snowmanMount.querySelector('.melt-drops'); if (drops) { drops.classList.remove('dripping'); void drops.offsetWidth; drops.classList.add('dripping'); }
+    setTimeout(done, 380);
+  }
 
   function renderSnowman(restored=false) {
     const wrong=restored ? 0 : game.wrong;
     const c=game.cosmetic;
-    const visible = i => wrong < i;
-    const puddleScale = .75 + Math.min(wrong, MELT_STAGES) * .14;
-    const puddleOpacity = .18 + Math.min(wrong, MELT_STAGES) * .10;
+    const stage=Math.min(wrong, MELT_STAGES);
+    const baseRy=[54,50,45,39,31,23,15,0][stage];
+    const baseCy=[207,211,216,222,229,237,245,255][stage];
+    const bodyRy=[43,40,36,31,25,18,10,0][stage];
+    const bodyCy=[145,150,156,164,174,188,218,255][stage];
+    const headR=[36,35,33,30,26,21,15,0][stage];
+    const headCy=[83,87,93,101,113,132,184,255][stage];
+    const bodyRx=Math.max(0, 43-stage*2.2);
+    const baseRx=Math.max(0, 54-stage*2.4);
+    const headY=headCy-83;
+    const scarfY=headY + stage*2;
+    const hatY=headY + stage*1.2;
+    const armOpacity=stage<6 ? Math.max(.2,1-stage*.12) : 0;
+    const accessoryOpacity=stage<7 ? Math.max(.25,1-stage*.1) : 0;
+    const buttonOpacity=stage<7 ? Math.max(.15,1-stage*.13) : 0;
+    const puddleRx=72 + stage*18;
+    const puddleRy=10 + stage*2.2;
+    const warning=stage===6;
+    els.snowmanMount.classList.toggle('last-chance', warning);
     els.snowmanMount.innerHTML = `
-      <svg class="snowman-svg" viewBox="0 0 320 280" role="img" aria-label="Snowman with ${Math.max(0,MELT_STAGES-wrong)} melt stages left">
-        <ellipse class="puddle" cx="160" cy="255" rx="78" ry="13" fill="#77c9eb" opacity="${puddleOpacity}" transform="scale(${puddleScale} 1) translate(${(1-puddleScale)*160} 0)"/>
-        <g class="snow-part ${visible(7)?'':'melt-out'}" id="base"><circle cx="160" cy="207" r="54" fill="#fff" stroke="#b6d9ea" stroke-width="3"/></g>
-        <g class="snow-part ${visible(6)?'':'melt-out'}" id="body"><circle cx="160" cy="145" r="43" fill="#fff" stroke="#b6d9ea" stroke-width="3"/></g>
-        <g class="snow-part ${visible(5)?'':'melt-out'}" id="arms">
-          <path d="M122 143 L82 118 L64 121" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <path d="M198 143 L236 116 L255 111" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <svg class="snowman-svg stage-${stage}" viewBox="0 0 320 280" role="img" aria-label="Snowman with ${Math.max(0,MELT_STAGES-stage)} wrong guesses remaining">
+        <ellipse class="puddle" cx="160" cy="258" rx="${puddleRx}" ry="${puddleRy}" fill="#77c9eb" opacity="${.18+stage*.1}"/>
+        <g class="melt-drops" opacity="${stage ? .95 : 0}">
+          <circle cx="122" cy="205" r="5" fill="#dff6ff"/><circle cx="201" cy="165" r="4" fill="#dff6ff"/><circle cx="174" cy="105" r="3.5" fill="#dff6ff"/>
         </g>
-        <g class="snow-part ${visible(4)?'':'melt-out'}" id="head"><circle cx="160" cy="83" r="36" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>
-          <circle cx="148" cy="76" r="4" fill="#223645"/><circle cx="173" cy="76" r="4" fill="#223645"/>
-          <path d="M148 95 Q160 105 174 94" stroke="#223645" stroke-width="3" fill="none" stroke-linecap="round"/>
+        ${stage<7 ? `<ellipse cx="160" cy="${baseCy}" rx="${baseRx}" ry="${baseRy}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>` : ''}
+        ${stage<7 ? `<ellipse cx="160" cy="${bodyCy}" rx="${bodyRx}" ry="${bodyRy}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>` : ''}
+        <g opacity="${armOpacity}">
+          <path d="M122 ${143+stage*5} L82 ${118+stage*7} L64 ${121+stage*7}" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M198 ${143+stage*5} L236 ${116+stage*7} L255 ${111+stage*7}" stroke="#74533e" stroke-width="6" fill="none" stroke-linecap="round"/>
         </g>
-        <g class="snow-part ${visible(3)?'':'melt-out'}" id="nose">${noseSvg(c.nose)}</g>
-        <g class="snow-part ${visible(2)?'':'melt-out'}" id="scarf">${scarfSvg(c.scarf)}</g>
-        <g class="snow-part ${visible(1)?'':'melt-out'}" id="hat">${hatSvg(c.hat)}</g>
-        <g>${buttonsSvg(c.buttons)}</g>
+        ${stage<7 ? `<g transform="translate(0 ${headY})"><circle cx="160" cy="83" r="${headR}" fill="#fff" stroke="#b6d9ea" stroke-width="3"/>
+          <circle cx="148" cy="76" r="${Math.max(2.4,4-stage*.18)}" fill="#223645"/><circle cx="173" cy="76" r="${Math.max(2.4,4-stage*.18)}" fill="#223645"/>
+          <path d="M148 95 Q160 ${stage>=6?99:105} 174 94" stroke="#223645" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <g opacity="${accessoryOpacity}">${noseSvg(c.nose)}</g></g>` : ''}
+        ${stage<7 ? `<g transform="translate(0 ${scarfY})" opacity="${accessoryOpacity}">${scarfSvg(c.scarf)}</g>` : ''}
+        ${stage<7 ? `<g transform="translate(0 ${hatY})" opacity="${accessoryOpacity}">${hatSvg(c.hat)}</g>` : ''}
+        ${stage<7 ? `<g transform="translate(0 ${stage*8})" opacity="${buttonOpacity}">${buttonsSvg(c.buttons, stage)}</g>` : ''}
+        ${warning ? `<g class="last-guess-ring"><ellipse cx="160" cy="250" rx="92" ry="22" fill="none" stroke="#e85d4a" stroke-width="5" stroke-dasharray="9 7"/></g>` : ''}
       </svg>`;
   }
 
@@ -228,23 +279,24 @@
     if (type==='short') return `<path d="M158 84 L181 90 L158 94Z" fill="#f38b2e"/>`;
     return `<path d="M158 84 L197 90 L158 95Z" fill="#f38b2e"/>`;
   }
-  function buttonsSvg(count) {
+  function buttonsSvg(count, stage=0) {
     const ys = count===2 ? [139,169] : count===3 ? [131,154,178] : [128,147,167,188];
-    return ys.map(y => `<circle cx="160" cy="${y}" r="4.5" fill="#354452"/>`).join('');
+    const remain=Math.max(0, ys.length-Math.floor(stage/2));
+    return ys.slice(0,remain).map(y => `<circle cx="160" cy="${y}" r="4.5" fill="#354452"/>`).join('');
   }
 
   function renderStats() {
     els.statsGrid.innerHTML='';
     let solvedTotal=0, bankTotal=0;
-    for (let len=4; len<=10; len++) {
+    for (let len=4; len<=8; len++) {
       const bank=byLength[len].length; const solved=(state.solved[len] || []).filter(w => byLength[len].some(x=>x.word===w)).length;
       solvedTotal+=solved; bankTotal+=bank;
       const pct=bank ? (solved/bank)*100 : 0;
       const card=document.createElement('div'); card.className='stat-card';
-      card.innerHTML=`<div class="stat-length">${len} letters</div><div class="stat-count">${solved} / ${bank}</div><div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>`;
+      card.innerHTML=`<div class="stat-row"><div class="stat-length">${len}-letter words</div><div class="stat-count">${solved} / ${bank}</div></div><div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>`;
       els.statsGrid.appendChild(card);
     }
-    els.statsTotal.textContent=`Total: ${solvedTotal} / ${bankTotal} words solved`;
+    els.statsTotal.innerHTML=`<strong>${solvedTotal}</strong><span>of ${bankTotal} words solved</span>`;
   }
 
   function openModal(id, allowStack=true) {
