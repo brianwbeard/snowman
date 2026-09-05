@@ -1,9 +1,9 @@
-# Snowman v1.8
+# Snowman v1.9
 
 Changes:
-- Play Learn To Readle is now a fourth Settings menu option.
-- Keyboard setting: QWERTY (default, three rows) or ABCDE (four-row alphabetical layout).
-- Added installable PWA support with Snowman + ABC app icons, manifest, Apple touch icon, and service worker/offline cache.
-- Keeps the v1.7 clue bank and confetti fix.
+- Added an always-available **New Word** button in the header, matching Learn To Readle. It abandons the current round without adding a win or loss.
+- Changed the ABCDE keyboard to a balanced 7-6-7-6 alphabetical layout with the six-key rows centered.
+- Finished clue coverage for every 6-letter answer and expanded 7-letter coverage to 122 / 195 words (922 / 1,139 clues overall).
+- Retains v1.8 PWA support, keyboard preference, clue preference, word-length preference, LTR menu link, reset progress, and win confetti.
 
 Upload every file in this folder to the Snowman repository root.

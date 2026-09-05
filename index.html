@@ -7,10 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Snowman" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.8" />
-  <link rel="apple-touch-icon" href="icon-180.png?v=1.8" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.9" />
+  <link rel="apple-touch-icon" href="icon-180.png?v=1.9" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css?v=1.8" />
+  <link rel="stylesheet" href="styles.css?v=1.9" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -19,6 +19,7 @@
       <div class="topbar-actions">
         <button class="gear-btn" id="statsBtn" aria-label="Progress" aria-expanded="false">📊</button>
         <button class="gear-btn" id="settingsBtn" aria-label="Settings" aria-expanded="false">⚙️</button>
+        <button class="small-btn" id="newWordBtn" type="button">New Word</button>
       </div>
     </header>
 
@@ -157,11 +158,11 @@
 
   <canvas id="confettiCanvas" aria-hidden="true"></canvas>
   <script src="/learn-to-readle/answers.js"></script>
-  <script src="words.js?v=1.8"></script>
-  <script src="app.js?v=1.8"></script>
+  <script src="words.js?v=1.9"></script>
+  <script src="app.js?v=1.9"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=1.8').catch(() => {}));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=1.9').catch(() => {}));
     }
   </script>
 </body>

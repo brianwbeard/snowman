@@ -6,7 +6,7 @@
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
   const QWERTY_KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
-  const ABCDE_KEYBOARD_ROWS = ['ABCDEFG', 'HIJKLMN', 'OPQRSTU', 'VWXYZ'];
+  const ABCDE_KEYBOARD_ROWS = ['ABCDEFG', 'HIJKLM', 'NOPQRST', 'UVWXYZ'];
 
   if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS) || window.SNOWMAN_WORDS.length === 0) {
     const detail = window.SNOWMAN_WORD_SOURCE_ERROR
@@ -26,7 +26,7 @@
   const $ = (id) => document.getElementById(id);
   const els = {
     snowmanMount: $('snowmanMount'), reaction: $('reaction'), clueWrap: $('clueWrap'), clueText: $('clueText'),
-    wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'),
+    wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'), newWordBtn: $('newWordBtn'),
     settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueButtons: $('clueButtons'), keyboardButtons: $('keyboardButtons'),
     modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
@@ -106,6 +106,7 @@
       els.statsBtn.setAttribute('aria-expanded', String(willOpen));
     });
     els.newGameBtn.addEventListener('click', startGame);
+    els.newWordBtn.addEventListener('click', startGame);
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => btn.addEventListener('click', () => {
       state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); startGame();
     }));
