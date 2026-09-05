@@ -1,4 +1,4 @@
-// Snowman v1.9: Learn to Readle's reviewed answers.js is the single source of secret words.
+// Snowman v1.11: Learn to Readle's reviewed answers.js is the single source of secret words.
 // This file stores only Snowman-specific clue overrides and adapts the shared word bank.
 (() => {
   'use strict';
@@ -12,7 +12,6 @@
     'CASE': 'A container or a situation',
     'COME': 'Move toward this place',
     'DEAR': 'Loved or special to you',
-    'DIED': 'Stopped being alive',
     'DOES': 'A form of the word do',
     'DONE': 'Finished',
     'DREW': 'Made a picture with a pencil',

@@ -227,10 +227,9 @@
   function startGame() {
     const item=pickWord(state.length);
     if (!item) { setMessage('No words are available at this length yet.', 'bad'); return; }
-    game={ item, guessed:new Set(), wrong:0, finished:false, animating:false, cosmetic:randomCosmetic() };
+    game={ item, guessed:new Set(), wrong:0, finished:false, animating:false, started:false, cosmetic:randomCosmetic() };
     renderSnowman(); renderWord(); resetKeyboard(); updateClue(); setMessage('Pick a letter!');
     els.newGameBtn.hidden=true;
-    trackAnalytics('game_started', currentGameAnalytics());
   }
 
   function randomCosmetic() {
@@ -243,6 +242,10 @@
 
   function guessLetter(letter) {
     if (!game || game.finished || game.animating || game.guessed.has(letter)) return;
+    if (!game.started) {
+      game.started=true;
+      trackAnalytics('game_started', currentGameAnalytics());
+    }
     game.guessed.add(letter);
     game.animating=true;
     const correct=game.item.word.includes(letter);
