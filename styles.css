@@ -292,3 +292,16 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
     transform:scale(.95);
   }
 }
+
+
+/* v1.8 — selectable keyboard + PWA polish */
+.settings-link-anchor { display:block; text-decoration:none; box-sizing:border-box; }
+@media (max-width:520px) {
+  .keyboard.qwerty-keys { width:min(100%, 430px); gap:7px; margin:8px auto; }
+  .keyboard.qwerty-keys .key-row { gap:5px; }
+  .keyboard.qwerty-keys .key { height:48px; min-width:0; font-size:17px; padding:0; }
+  .keyboard.abcde-keys { width:min(100%, 410px); gap:6px; margin:8px auto; }
+  .keyboard.abcde-keys .key-row { width:100%; gap:7px; }
+  .keyboard.abcde-keys .key-row:nth-child(4) { width:72%; }
+  .keyboard.abcde-keys .key { height:52px; max-width:none; border-radius:9px; font-size:19px; padding:0; touch-action:manipulation; }
+}

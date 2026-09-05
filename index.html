@@ -4,8 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#eaf7ff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Snowman" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.8" />
+  <link rel="apple-touch-icon" href="icon-180.png?v=1.8" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css?v=1.7" />
+  <link rel="stylesheet" href="styles.css?v=1.8" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -35,10 +40,18 @@
         <button class="choice-btn" type="button" data-clues="no">No</button>
       </div>
     </section>
+    <section class="mode-control" aria-label="Keyboard setting">
+      <strong>Keyboard</strong>
+      <div class="choice-buttons" id="keyboardButtons" role="group" aria-label="Keyboard layout">
+        <button class="choice-btn" type="button" data-keyboard="qwerty">QWERTY</button>
+        <button class="choice-btn" type="button" data-keyboard="abcde">ABCDE</button>
+      </div>
+    </section>
     <div class="settings-links">
       <button class="settings-link" data-open="aboutModal">About Snowman</button>
       <button class="settings-link" data-open="privacyModal">Privacy</button>
       <button class="settings-link" data-open="grownupsGateModal">For Parents &amp; Grown-Ups</button>
+      <a class="settings-link settings-link-anchor" href="https://brianwbeard.github.io/learn-to-readle/">Play Learn To Readle</a>
     </div>
   </div>
 
@@ -79,7 +92,6 @@
       <p><strong>Snowman</strong> is a kid-friendly word guessing game. Pick letters to uncover the hidden word before your snowman melts away.</p>
       <p>Correct letters pop into the word. Each wrong letter makes one part of the snowman melt away. After seven wrong guesses, the snowman melts completely and the game is over.</p>
       <p>There are unlimited games, word lengths from 4–8 letters, optional clues, and progress tracking for every unique word you solve.</p>
-      <a class="primary-btn link-btn sibling-game-link" href="https://brianwbeard.github.io/learn-to-readle/">Play Learn to Readle</a>
     </div>
   </section>
 
@@ -145,7 +157,12 @@
 
   <canvas id="confettiCanvas" aria-hidden="true"></canvas>
   <script src="/learn-to-readle/answers.js"></script>
-  <script src="words.js?v=1.7"></script>
-  <script src="app.js?v=1.7"></script>
+  <script src="words.js?v=1.8"></script>
+  <script src="app.js?v=1.8"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=1.8').catch(() => {}));
+    }
+  </script>
 </body>
 </html>

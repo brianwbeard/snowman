@@ -5,9 +5,8 @@
   const VENMO_URL = 'https://venmo.com/u/brianwbeard';
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
-  const DESKTOP_KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
-  // On phones, wrap the same QWERTY sequence into four rows so each tap target can be much wider.
-  const MOBILE_KEYBOARD_ROWS = ['QWERTYU', 'IOPASDF', 'GHJKLZX', 'CVBNM'];
+  const QWERTY_KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+  const ABCDE_KEYBOARD_ROWS = ['ABCDEFG', 'HIJKLMN', 'OPQRSTU', 'VWXYZ'];
 
   if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS) || window.SNOWMAN_WORDS.length === 0) {
     const detail = window.SNOWMAN_WORD_SOURCE_ERROR
@@ -28,7 +27,7 @@
   const els = {
     snowmanMount: $('snowmanMount'), reaction: $('reaction'), clueWrap: $('clueWrap'), clueText: $('clueText'),
     wordDisplay: $('wordDisplay'), message: $('message'), keyboard: $('keyboard'), newGameBtn: $('newGameBtn'),
-    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueButtons: $('clueButtons'),
+    settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueButtons: $('clueButtons'), keyboardButtons: $('keyboardButtons'),
     modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
     venmoLink: $('venmoLink'),
@@ -44,11 +43,12 @@
       return {
         length: Number(raw.length) >= 4 && Number(raw.length) <= 8 ? Number(raw.length) : 5,
         clues: raw.clues !== false,
+        keyboard: raw.keyboard === 'abcde' ? 'abcde' : 'qwerty',
         solved: raw.solved && typeof raw.solved === 'object' ? raw.solved : {},
         seen: raw.seen && typeof raw.seen === 'object' ? raw.seen : {}
       };
     } catch {
-      return { length:5, clues:true, solved:{}, seen:{} };
+      return { length:5, clues:true, keyboard:'qwerty', solved:{}, seen:{} };
     }
   }
 
@@ -57,6 +57,7 @@
   function init() {
     updateLengthButtons();
     updateClueButtons();
+    updateKeyboardButtons();
     els.venmoLink.href = VENMO_URL;
     buildKeyboard();
     bindEvents();
@@ -75,6 +76,14 @@
   function updateClueButtons() {
     els.clueButtons.querySelectorAll('[data-clues]').forEach(btn => {
       const selected = (btn.dataset.clues === 'yes') === state.clues;
+      btn.classList.toggle('active', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function updateKeyboardButtons() {
+    els.keyboardButtons.querySelectorAll('[data-keyboard]').forEach(btn => {
+      const selected = btn.dataset.keyboard === state.keyboard;
       btn.classList.toggle('active', selected);
       btn.setAttribute('aria-pressed', String(selected));
     });
@@ -104,6 +113,11 @@
       state.clues = btn.dataset.clues === 'yes';
       saveState(); updateClueButtons(); updateClue();
     }));
+    els.keyboardButtons.querySelectorAll('[data-keyboard]').forEach(btn => btn.addEventListener('click', () => {
+      state.keyboard = btn.dataset.keyboard === 'abcde' ? 'abcde' : 'qwerty';
+      saveState(); updateKeyboardButtons(); buildKeyboard();
+      if (game) { game.guessed.forEach(letter => { const key=els.keyboard.querySelector(`[data-letter=\"${letter}\"]`); if (key) { key.disabled=true; key.classList.add(game.item.word.includes(letter) ? 'good' : 'bad'); } }); }
+    }));
     els.modalBackdrop.addEventListener('click', closeModal);
     document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', closeModal));
     document.querySelectorAll('[data-open]').forEach(btn => btn.addEventListener('click', () => {
@@ -123,8 +137,9 @@
 
   function buildKeyboard() {
     els.keyboard.innerHTML='';
-    const rows = window.matchMedia('(max-width: 520px)').matches ? MOBILE_KEYBOARD_ROWS : DESKTOP_KEYBOARD_ROWS;
-    els.keyboard.classList.toggle('kid-keys', rows === MOBILE_KEYBOARD_ROWS);
+    const rows = state.keyboard === 'abcde' ? ABCDE_KEYBOARD_ROWS : QWERTY_KEYBOARD_ROWS;
+    els.keyboard.classList.toggle('abcde-keys', state.keyboard === 'abcde');
+    els.keyboard.classList.toggle('qwerty-keys', state.keyboard === 'qwerty');
     rows.forEach(rowLetters => {
       const row=document.createElement('div');
       row.className='key-row';
