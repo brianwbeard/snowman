@@ -7,10 +7,18 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Snowman" />
-  <link rel="manifest" href="manifest.webmanifest?v=1.9" />
-  <link rel="apple-touch-icon" href="icon-180.png?v=1.9" />
+  <link rel="manifest" href="manifest.webmanifest?v=1.10" />
+  <link rel="apple-touch-icon" href="icon-180.png?v=1.10" />
   <title>Snowman</title>
-  <link rel="stylesheet" href="styles.css?v=1.9" />
+  <script
+    defer
+    src="https://cloud.umami.is/script.js"
+    data-website-id="10178998-4c72-47b7-a3d9-3cae44759a3e"
+    data-auto-track="false"
+    data-do-not-track="true"
+    data-exclude-search="true"
+    data-exclude-hash="true"></script>
+  <link rel="stylesheet" href="styles.css?v=1.10" />
 </head>
 <body>
   <main class="app-shell" id="app">
@@ -52,7 +60,7 @@
       <button class="settings-link" data-open="aboutModal">About Snowman</button>
       <button class="settings-link" data-open="privacyModal">Privacy</button>
       <button class="settings-link" data-open="grownupsGateModal">For Parents &amp; Grown-Ups</button>
-      <a class="settings-link settings-link-anchor" href="https://brianwbeard.github.io/learn-to-readle/">Play Learn To Readle</a>
+      <a class="settings-link settings-link-anchor" id="ltrLink" href="https://brianwbeard.github.io/learn-to-readle/">Play Learn To Readle</a>
     </div>
   </div>
 
@@ -99,10 +107,13 @@
   <section class="modal" id="privacyModal" hidden role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
     <div class="modal-head"><h2 id="privacyTitle">Privacy</h2><button class="close-btn" data-close>×</button></div>
     <div class="modal-body prose">
-      <p>Snowman does not require an account and does not ask for your name, email address, or other personal information.</p>
-      <p>Your settings and solved-word progress are stored locally in your browser on this device. That information is not sent to a server by this version of the game.</p>
-      <p>If you clear your browser's site data, use a different browser, or use another device, your local progress may not carry over.</p>
-      <p>Links to third-party services, such as Venmo, are governed by those services' own privacy policies.</p>
+      <p>Snowman is designed with children's privacy in mind. You don't need an account to play, and Snowman does not ask players for their name, email address, age, or other personal information.</p>
+      <p>Snowman uses Umami, a privacy-focused analytics service, solely to understand how the game is being used and to help operate and improve it. This includes usage information such as how often the game is used, which word lengths, clue settings, and keyboard layouts are selected, whether games are completed, and which features are opened.</p>
+      <p>Snowman does <strong>not</strong> send your guessed letters, answer words, solved-word history, progress, or anything you type to Umami.</p>
+      <p>Umami does not use cookies or track people across different websites. It may process technical information such as device type, browser, operating system, approximate location, and IP address to produce usage statistics. IP addresses are not stored.</p>
+      <p>The information collected through analytics is used only to operate, understand, and improve Snowman. Snowman does not use analytics to identify or contact individual players, create profiles of individual players, or for advertising or marketing. Analytics data is not sold.</p>
+      <p>We limit the information Snowman sends to Umami to the usage events needed for these purposes. We do not assign players an account or persistent Snowman user ID, and we do not use Umami's features for identifying individual users.</p>
+      <p>Game settings and progress are stored locally on your device and are not included in analytics.</p>
     </div>
   </section>
 
@@ -158,11 +169,11 @@
 
   <canvas id="confettiCanvas" aria-hidden="true"></canvas>
   <script src="/learn-to-readle/answers.js"></script>
-  <script src="words.js?v=1.9"></script>
-  <script src="app.js?v=1.9"></script>
+  <script src="words.js?v=1.10"></script>
+  <script src="app.js?v=1.10"></script>
   <script>
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=1.9').catch(() => {}));
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js?v=1.10').catch(() => {}));
     }
   </script>
 </body>

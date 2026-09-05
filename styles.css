@@ -307,11 +307,7 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
 }
 
 
-/* v1.9 — New Word control + balanced alphabetical keyboard */
-.keyboard.abcde-keys .key-row:nth-child(1),
-.keyboard.abcde-keys .key-row:nth-child(3) { width:100%; }
-.keyboard.abcde-keys .key-row:nth-child(2),
-.keyboard.abcde-keys .key-row:nth-child(4) { width:86%; }
+/* v1.9 — New Word control */
 .small-btn {
   min-height:42px;
   padding:0 12px;
@@ -328,10 +324,4 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
 @media (max-width:430px) {
   .small-btn { min-height:38px; height:38px; padding:0 9px; font-size:12px; }
   .brand { font-size:clamp(20px,5vw,26px); }
-}
-@media (max-width:520px) {
-  .keyboard.abcde-keys .key-row:nth-child(1),
-  .keyboard.abcde-keys .key-row:nth-child(3) { width:100%; }
-  .keyboard.abcde-keys .key-row:nth-child(2),
-  .keyboard.abcde-keys .key-row:nth-child(4) { width:86%; }
 }

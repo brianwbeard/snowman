@@ -1,9 +1,11 @@
-# Snowman v1.9
+# Snowman v1.10
 
 Changes:
-- Added an always-available **New Word** button in the header, matching Learn To Readle. It abandons the current round without adding a win or loss.
-- Changed the ABCDE keyboard to a balanced 7-6-7-6 alphabetical layout with the six-key rows centered.
-- Finished clue coverage for every 6-letter answer and expanded 7-letter coverage to 122 / 195 words (922 / 1,139 clues overall).
-- Retains v1.8 PWA support, keyboard preference, clue preference, word-length preference, LTR menu link, reset progress, and win confetti.
+- Returned the ABCDE keyboard to the 7-7-7-5 alphabetical layout.
+- Added privacy-first Umami analytics using the same website ID as Learn To Readle, with every Snowman event tagged `game: snowman`.
+- Tracks anonymous usage events such as app opens, game starts/completions, settings/progress opens, word-length/clue/keyboard changes, New Word use, and clicks to Learn To Readle. No answer words or guessed letters are sent.
+- Updated Snowman’s Privacy page to closely match Learn To Readle’s privacy language.
+- Finished clue coverage for the entire shared 4–8 letter bank: 1,139 / 1,139 words.
+- Retains v1.9 New Word behavior, PWA support, saved settings, reset progress, and win confetti.
 
 Upload every file in this folder to the Snowman repository root.

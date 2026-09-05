@@ -6,7 +6,7 @@
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
   const QWERTY_KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
-  const ABCDE_KEYBOARD_ROWS = ['ABCDEFG', 'HIJKLM', 'NOPQRST', 'UVWXYZ'];
+  const ABCDE_KEYBOARD_ROWS = ['ABCDEFG', 'HIJKLMN', 'OPQRSTU', 'VWXYZ'];
 
   if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS) || window.SNOWMAN_WORDS.length === 0) {
     const detail = window.SNOWMAN_WORD_SOURCE_ERROR
@@ -30,12 +30,57 @@
     settingsBtn: $('settingsBtn'), statsBtn: $('statsBtn'), lengthButtons: $('lengthButtons'), clueButtons: $('clueButtons'), keyboardButtons: $('keyboardButtons'),
     modalBackdrop: $('modalBackdrop'), settingsPanel: $('settingsPanel'), statsPanel: $('statsPanel'), statsGrid: $('statsGrid'), statsTotal: $('statsTotal'),
     mathQuestion: $('mathQuestion'), mathAnswer: $('mathAnswer'), mathSubmit: $('mathSubmit'), mathFeedback: $('mathFeedback'),
-    venmoLink: $('venmoLink'),
+    venmoLink: $('venmoLink'), ltrLink: $('ltrLink'),
     winMessage: $('winMessage'), winWord: $('winWord'), winNextBtn: $('winNextBtn'),
     loseWord: $('loseWord'), loseNextBtn: $('loseNextBtn'),
     resetStatsBtn: $('resetStatsBtn'), resetStatsYesBtn: $('resetStatsYesBtn'), resetStatsNoBtn: $('resetStatsNoBtn'),
     confettiCanvas: $('confettiCanvas')
   };
+
+  function analyticsProperties(extra={}) {
+    return {
+      game: 'snowman',
+      ...extra
+    };
+  }
+
+  function trackAnalytics(eventName, properties={}) {
+    try {
+      if (window.umami && typeof window.umami.track === 'function') {
+        window.umami.track(eventName, analyticsProperties(properties));
+      }
+    } catch (err) {
+      console.warn('Analytics event failed:', err);
+    }
+  }
+
+  let analyticsAppOpenedSent = false;
+  function trackAppOpenedWhenReady() {
+    if (analyticsAppOpenedSent) return;
+    const send = () => {
+      if (analyticsAppOpenedSent) return true;
+      if (window.umami && typeof window.umami.track === 'function') {
+        analyticsAppOpenedSent = true;
+        window.umami.track('app_opened', analyticsProperties());
+        return true;
+      }
+      return false;
+    };
+    if (send()) return;
+    let attempts=0;
+    const timer=setInterval(() => {
+      attempts++;
+      if (send() || attempts >= 50) clearInterval(timer);
+    },100);
+  }
+
+  function currentGameAnalytics() {
+    return {
+      word_length: `${state.length}-letter`,
+      clues: state.clues ? 'yes' : 'no',
+      keyboard: state.keyboard
+    };
+  }
 
   function loadState() {
     try {
@@ -62,6 +107,7 @@
     buildKeyboard();
     bindEvents();
     startGame();
+    trackAppOpenedWhenReady();
   }
 
 
@@ -96,27 +142,28 @@
       els.statsBtn.setAttribute('aria-expanded','false');
       els.settingsPanel.classList.toggle('show', willOpen);
       els.settingsBtn.setAttribute('aria-expanded', String(willOpen));
+      if (willOpen) trackAnalytics('settings_opened');
     });
     els.statsBtn.addEventListener('click', () => {
       const willOpen = !els.statsPanel.classList.contains('show');
       els.settingsPanel.classList.remove('show');
       els.settingsBtn.setAttribute('aria-expanded','false');
-      if (willOpen) renderStats();
+      if (willOpen) { renderStats(); trackAnalytics('progress_opened'); }
       els.statsPanel.classList.toggle('show', willOpen);
       els.statsBtn.setAttribute('aria-expanded', String(willOpen));
     });
     els.newGameBtn.addEventListener('click', startGame);
-    els.newWordBtn.addEventListener('click', startGame);
+    els.newWordBtn.addEventListener('click', () => { trackAnalytics('new_word', currentGameAnalytics()); startGame(); });
     els.lengthButtons.querySelectorAll('[data-length]').forEach(btn => btn.addEventListener('click', () => {
-      state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); startGame();
+      state.length = Number(btn.dataset.length); saveState(); updateLengthButtons(); trackAnalytics('length_changed', { word_length: `${state.length}-letter` }); startGame();
     }));
     els.clueButtons.querySelectorAll('[data-clues]').forEach(btn => btn.addEventListener('click', () => {
       state.clues = btn.dataset.clues === 'yes';
-      saveState(); updateClueButtons(); updateClue();
+      saveState(); updateClueButtons(); updateClue(); trackAnalytics('clues_changed', { clues: state.clues ? 'yes' : 'no' });
     }));
     els.keyboardButtons.querySelectorAll('[data-keyboard]').forEach(btn => btn.addEventListener('click', () => {
       state.keyboard = btn.dataset.keyboard === 'abcde' ? 'abcde' : 'qwerty';
-      saveState(); updateKeyboardButtons(); buildKeyboard();
+      saveState(); updateKeyboardButtons(); buildKeyboard(); trackAnalytics('keyboard_changed', { keyboard: state.keyboard });
       if (game) { game.guessed.forEach(letter => { const key=els.keyboard.querySelector(`[data-letter=\"${letter}\"]`); if (key) { key.disabled=true; key.classList.add(game.item.word.includes(letter) ? 'good' : 'bad'); } }); }
     }));
     els.modalBackdrop.addEventListener('click', closeModal);
@@ -125,7 +172,11 @@
       els.settingsPanel.classList.remove('show');
       els.settingsBtn.setAttribute('aria-expanded','false');
       openModal(btn.dataset.open);
+      if (btn.dataset.open === 'grownupsGateModal') trackAnalytics('grownups_opened');
+      if (btn.dataset.open === 'privacyModal') trackAnalytics('privacy_opened');
+      if (btn.dataset.open === 'aboutModal') trackAnalytics('about_opened');
     }));
+    if (els.ltrLink) els.ltrLink.addEventListener('click', () => trackAnalytics('ltr_clicked'));
     els.mathSubmit.addEventListener('click', checkMathGate);
     els.mathAnswer.addEventListener('keydown', e => { if (e.key === 'Enter') checkMathGate(); });
     els.winNextBtn.addEventListener('click', () => { closeModal(); startGame(); });
@@ -179,6 +230,7 @@
     game={ item, guessed:new Set(), wrong:0, finished:false, animating:false, cosmetic:randomCosmetic() };
     renderSnowman(); renderWord(); resetKeyboard(); updateClue(); setMessage('Pick a letter!');
     els.newGameBtn.hidden=true;
+    trackAnalytics('game_started', currentGameAnalytics());
   }
 
   function randomCosmetic() {
@@ -244,6 +296,7 @@
     els.winMessage.textContent='You solved the word!';
     els.winWord.textContent=game.item.word;
     els.newGameBtn.hidden=true;
+    trackAnalytics('game_completed', { ...currentGameAnalytics(), result:'win', wrong_guesses: game.wrong });
     setTimeout(() => { openModal('winModal', false); launchConfetti(); }, 650);
   }
 
@@ -254,6 +307,7 @@
     renderWord(null, true);
     els.loseWord.textContent=game.item.word;
     els.newGameBtn.hidden=true;
+    trackAnalytics('game_completed', { ...currentGameAnalytics(), result:'loss', wrong_guesses: game.wrong });
     els.snowmanMount.classList.add('puddle-finish');
     setTimeout(() => {
       els.snowmanMount.classList.remove('puddle-finish');
