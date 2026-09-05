@@ -260,3 +260,35 @@ select, .save-input, .math-gate input { width:100%; min-height:46px; border:2px 
   position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:21; display:none;
 }
 #confettiCanvas.show { display:block; }
+
+/* v1.7 — reliable win confetti + kid-size phone keyboard */
+#confettiCanvas { z-index: 40; }
+
+.sibling-game-link { margin-top:18px; }
+
+@media (max-width:520px) {
+  .keyboard.kid-keys {
+    width:min(100%, 410px);
+    gap:6px;
+    margin:8px auto 8px;
+  }
+  .keyboard.kid-keys .key-row {
+    width:100%;
+    gap:6px;
+  }
+  .keyboard.kid-keys .key-row:nth-child(4) {
+    width:72%;
+  }
+  .keyboard.kid-keys .key {
+    height:50px;
+    max-width:none;
+    border-radius:9px;
+    font-size:18px;
+    padding:0;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .keyboard.kid-keys .key:active:not(:disabled) {
+    transform:scale(.95);
+  }
+}

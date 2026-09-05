@@ -5,7 +5,9 @@
   const VENMO_URL = 'https://venmo.com/u/brianwbeard';
   const MELT_STAGES = 7;
   const STORAGE_KEY = 'snowman-v1-state';
-  const KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+  const DESKTOP_KEYBOARD_ROWS = ['QWERTYUIOP', 'ASDFGHJKL', 'ZXCVBNM'];
+  // On phones, wrap the same QWERTY sequence into four rows so each tap target can be much wider.
+  const MOBILE_KEYBOARD_ROWS = ['QWERTYU', 'IOPASDF', 'GHJKLZX', 'CVBNM'];
 
   if (!window.SNOWMAN_WORDS || !Array.isArray(window.SNOWMAN_WORDS) || window.SNOWMAN_WORDS.length === 0) {
     const detail = window.SNOWMAN_WORD_SOURCE_ERROR
@@ -121,7 +123,9 @@
 
   function buildKeyboard() {
     els.keyboard.innerHTML='';
-    KEYBOARD_ROWS.forEach(rowLetters => {
+    const rows = window.matchMedia('(max-width: 520px)').matches ? MOBILE_KEYBOARD_ROWS : DESKTOP_KEYBOARD_ROWS;
+    els.keyboard.classList.toggle('kid-keys', rows === MOBILE_KEYBOARD_ROWS);
+    rows.forEach(rowLetters => {
       const row=document.createElement('div');
       row.className='key-row';
       [...rowLetters].forEach(letter => {
